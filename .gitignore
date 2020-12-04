@@ -1,0 +1,13 @@
+*.out
+*.log
+*.res
+*.tmpres
+*.iml
+*.csv
+.idea/
+target/
+output/
+AnyNovelModels/
+*_log
+
+resources/dataset/
