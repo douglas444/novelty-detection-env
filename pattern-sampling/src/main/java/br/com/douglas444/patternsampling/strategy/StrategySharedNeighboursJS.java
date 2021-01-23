@@ -15,11 +15,11 @@ import java.util.Set;
 public class StrategySharedNeighboursJS extends Strategy {
 
     private double threshold;
-    private double kFactor;
+    private double factor;
 
-    public StrategySharedNeighboursJS(double threshold, double kFactor) {
+    public StrategySharedNeighboursJS(double threshold, double factor) {
         this.threshold = threshold;
-        this.kFactor = kFactor;
+        this.factor = factor;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class StrategySharedNeighboursJS extends Strategy {
 
     @Override
     public Double getParameter2() {
-        return kFactor;
+        return factor;
     }
 
     @Override
@@ -82,8 +82,8 @@ public class StrategySharedNeighboursJS extends Strategy {
         if (knownClusterSummaries.isEmpty()) {
             bayesianErrorEstimation = 1;
         } else {
-            bayesianErrorEstimation = BayesianErrorEstimation.estimateBayesianErrorNeighbours(targetClusterSummary,
-                    knownClusterSummaries, knownLabels);
+            bayesianErrorEstimation = BayesianErrorEstimation.sharedNeighboursProbability(targetClusterSummary,
+                    knownClusterSummaries, knownLabels, factor);
         }
 
         if (bayesianErrorEstimation > this.threshold) {

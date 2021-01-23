@@ -82,7 +82,7 @@ public class StrategyEuclideanDistanceJS extends Strategy {
             bayesianErrorEstimation = 1;
         } else {
             bayesianErrorEstimation = BayesianErrorEstimation
-                    .estimateBayesianErrorDistanceBased(targetCentroid, Arrays.asList(centroids.clone()), knownLabels);
+                    .distanceProbability(targetCentroid, Arrays.asList(centroids.clone()), knownLabels);
         }
 
         if (bayesianErrorEstimation > this.threshold) {

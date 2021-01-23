@@ -4,15 +4,19 @@ import br.com.douglas444.mltk.datastructure.ClusterSummary;
 import br.com.douglas444.mltk.datastructure.Sample;
 import br.com.douglas444.patternsampling.strategy.common.BayesianErrorEstimation;
 import br.com.douglas444.patternsampling.strategy.common.Strategy;
+import br.com.douglas444.patternsampling.strategy.common.Valuable;
 import br.com.douglas444.patternsampling.types.ConceptCategory;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class StrategyEuclideanDistance extends Strategy {
+public class StrategyEuclideanDistance extends Strategy implements Valuable {
 
-    private final double threshold;
+    private double threshold;
+
+    public StrategyEuclideanDistance() {
+    }
 
     public StrategyEuclideanDistance(final double threshold) {
         this.threshold = threshold;
@@ -34,6 +38,21 @@ public class StrategyEuclideanDistance extends Strategy {
                                                      final List<ClusterSummary> knownClusterSummaries,
                                                      final Set<Integer> knownLabels) {
 
+        double bayesianErrorEstimation = getValue(targetClusterSummary, knownClusterSummaries, knownLabels);
+
+        if (bayesianErrorEstimation > this.threshold) {
+            return ConceptCategory.NOVELTY;
+        } else {
+            return ConceptCategory.KNOWN;
+        }
+
+    }
+
+    @Override
+    public double getValue(final ClusterSummary targetClusterSummary,
+                           final List<ClusterSummary> knownClusterSummaries,
+                           final Set<Integer> knownLabels) {
+
         final Sample targetConceptCentroid = targetClusterSummary.calculateCentroid();
 
         final List<Sample> knownConceptsCentroids = knownClusterSummaries
@@ -46,15 +65,9 @@ public class StrategyEuclideanDistance extends Strategy {
             bayesianErrorEstimation = 1;
         } else {
             bayesianErrorEstimation = BayesianErrorEstimation
-                    .estimateBayesianErrorDistanceBased(targetConceptCentroid, knownConceptsCentroids, knownLabels);
+                    .distanceProbability(targetConceptCentroid, knownConceptsCentroids, knownLabels);
         }
-
-        if (bayesianErrorEstimation > this.threshold) {
-            return ConceptCategory.NOVELTY;
-        } else {
-            return ConceptCategory.KNOWN;
-        }
-
+        return bayesianErrorEstimation;
     }
 
 }

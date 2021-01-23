@@ -3,11 +3,9 @@ package br.com.douglas444.minas;
 import br.com.douglas444.minas.heater.Heater;
 import br.com.douglas444.minas.interceptor.MINASInterceptor;
 import br.com.douglas444.mltk.clustering.kmeans.KMeansPlusPlus;
-import br.com.douglas444.mltk.datastructure.Cluster;
-import br.com.douglas444.mltk.datastructure.ClusterSummary;
-import br.com.douglas444.mltk.datastructure.DynamicConfusionMatrix;
-import br.com.douglas444.mltk.datastructure.Sample;
+import br.com.douglas444.mltk.datastructure.*;
 import br.com.douglas444.patternsampling.common.ConceptClassificationContext;
+import br.com.douglas444.patternsampling.common.WarmUpContext;
 import br.com.douglas444.patternsampling.types.ConceptCategory;
 
 import java.util.*;
@@ -93,6 +91,17 @@ public class MINAS {
 
             microClusters.forEach(microCluster -> microCluster.setTimestamp(this.timestamp));
             this.decisionModel.merge(microClusters);
+
+
+            this.interceptor.WARM_UP_AL_FRAMEWORK.with(
+                    new WarmUpContext()
+                            .setPseudoPoints(
+                                    this.decisionModel.getMicroClusters()
+                                            .stream()
+                                            .map(MicroCluster::calculateCentroid)
+                                            .map(PseudoPoint::new)
+                                            .collect(Collectors.toList())))
+                    .executeOrDefault(() -> {});
         }
 
     }

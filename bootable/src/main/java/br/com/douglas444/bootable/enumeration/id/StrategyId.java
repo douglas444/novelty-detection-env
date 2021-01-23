@@ -16,6 +16,7 @@ public class StrategyId {
         map.put(1, SHARED_NEIGHBOURS);
         map.put(2, EUCLIDEAN_DISTANCE_JS);
         map.put(3, SHARED_NEIGHBOURS_JS);
+        map.put(4, WEIGHTED_EUCLIDEAN_DISTANCE);
 
     }
 }

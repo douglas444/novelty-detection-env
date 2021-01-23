@@ -2,9 +2,11 @@ package br.com.douglas444.bootable;
 
 import br.com.douglas444.bootable.enumeration.DatasetEnum;
 import br.com.douglas444.bootable.enumeration.FrameworkEnum;
+import br.com.douglas444.bootable.enumeration.LowLevelStrategyEnum;
 import br.com.douglas444.bootable.enumeration.StrategyEnum;
 import br.com.douglas444.bootable.enumeration.optionHandler.DatasetOptionHandler;
 import br.com.douglas444.bootable.enumeration.optionHandler.FrameworkOptionHandler;
+import br.com.douglas444.bootable.enumeration.optionHandler.LowLevelStrategyOptionHandler;
 import br.com.douglas444.bootable.enumeration.optionHandler.StrategyOptionHandler;
 import br.com.douglas444.bootable.framework.AnyNovelExperiment;
 import br.com.douglas444.bootable.framework.ECHOExperiment;
@@ -15,10 +17,10 @@ import br.com.douglas444.bootable.framework.arguments.ECHOArguments;
 import br.com.douglas444.bootable.framework.arguments.HigiaArguments;
 import br.com.douglas444.bootable.framework.arguments.MINASArguments;
 import br.com.douglas444.bootable.out.Printable;
-import br.com.douglas444.patternsampling.strategy.StrategyEuclideanDistance;
-import br.com.douglas444.patternsampling.strategy.StrategyEuclideanDistanceJS;
-import br.com.douglas444.patternsampling.strategy.StrategySharedNeighbours;
-import br.com.douglas444.patternsampling.strategy.StrategySharedNeighboursJS;
+import br.com.douglas444.patternsampling.lowlevel.KMedoids;
+import br.com.douglas444.patternsampling.lowlevel.KMostOrLessInformative;
+import br.com.douglas444.patternsampling.lowlevel.LowLevelStrategy;
+import br.com.douglas444.patternsampling.strategy.*;
 import br.com.douglas444.patternsampling.strategy.common.Strategy;
 import br.com.douglas444.patternsampling.types.InterceptionResultSummary;
 import org.kohsuke.args4j.CmdLineParser;
@@ -30,26 +32,32 @@ import java.util.List;
 
 public class Main {
 
-    @Option(name="--strategy", aliases = {"s"}, handler= StrategyOptionHandler.class, required = true)
+    @Option(name="--strategy", aliases = {"--s"}, handler= StrategyOptionHandler.class, required = true)
     private StrategyEnum strategyOption;
 
-    @Option(name="--parameter1", aliases = {"p1"}, forbids={"--variateParameter1"})
+    @Option(name="--lowLevelStrategy", aliases = {"--ls"}, handler= LowLevelStrategyOptionHandler.class, required = true)
+    private LowLevelStrategyEnum lowLevelStrategyOption;
+
+    @Option(name="--parameter1", aliases = {"--p1"}, forbids={"--variateParameter1"})
     private Double parameter1;
 
-    @Option(name="--parameter2", aliases = {"p2"}, forbids={"--variateParameter2"})
+    @Option(name="--parameter2", aliases = {"--p2"}, forbids={"--variateParameter2"})
     private Double parameter2;
 
-    @Option(name="--framework", aliases = {"f"}, handler= FrameworkOptionHandler.class, required = true)
+    @Option(name="--lowLevelStrategyParameter1", aliases = {"--lsp1"}, required = true)
+    private Double lowLevelStrategyParameter1;
+
+    @Option(name="--framework", aliases = {"--f"}, handler= FrameworkOptionHandler.class, required = true)
     private FrameworkEnum frameworkOption;
 
-    @Option(name="--dataset", aliases = {"d"}, handler= DatasetOptionHandler.class, required = true)
+    @Option(name="--dataset", aliases = {"--d"}, handler= DatasetOptionHandler.class, required = true)
     private DatasetEnum datasetOption;
 
-    @Option(name="--variateParameter1", handler = StringArrayOptionHandler.class, aliases = {"vp1"},
+    @Option(name="--variateParameter1", handler = StringArrayOptionHandler.class, aliases = {"--vp1"},
             forbids={"--variateParameter2"})
     private String[] variateParameter1;
 
-    @Option(name="--variateParameter2", handler = StringArrayOptionHandler.class, aliases = {"vp2"},
+    @Option(name="--variateParameter2", handler = StringArrayOptionHandler.class, aliases = {"--vp2"},
             forbids={"--variateParameter1"})
     private String[] variateParameter2;
 
@@ -66,13 +74,8 @@ public class Main {
     private void doMain(final String[] args) throws Exception {
 
         CmdLineParser parser = new CmdLineParser(this);
-
-        try {
-            parser.parseArgument(args);
-            this.additionalArgumentsValidation();
-        } catch (Exception e) {
-            throw e;
-        }
+        parser.parseArgument(args);
+        this.additionalArgumentsValidation();
 
         String folderId;
 
@@ -151,6 +154,11 @@ public class Main {
             throw new Exception("Strategy 1 was selected, so option \"parameter2\" is required");
         }
 
+        if (this.strategyOption == StrategyEnum.SHARED_NEIGHBOURS_JS
+                && parameter2 == null && (variateParameter2 == null)) {
+            throw new Exception("Strategy 3 was selected, so option \"parameter2\" is required");
+        }
+
         if (this.variateParameter1 != null && this.variateParameter1.length != 3) {
             throw new Exception("Malformed variateParameter1 vector");
         }
@@ -190,9 +198,25 @@ public class Main {
             case SHARED_NEIGHBOURS:
                 strategy = new StrategySharedNeighbours(parameter1, parameter2);
                 break;
+            case WEIGHTED_EUCLIDEAN_DISTANCE:
+                strategy = new StrategyWeightedEuclideanDistance(parameter1);
+                break;
             default:
                 throw new IllegalArgumentException();
         }
+
+
+        switch (lowLevelStrategyOption) {
+            case K_MEDOIDS:
+                strategy.setLowLevelStrategy(new KMedoids(lowLevelStrategyParameter1.intValue()));
+                break;
+            case MOST_OR_LESS_INFORMATIVE:
+                strategy.setLowLevelStrategy(new KMostOrLessInformative(lowLevelStrategyParameter1.intValue()));
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
 
         final InterceptionResultSummary resultSummary;
 

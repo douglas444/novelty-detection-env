@@ -6,6 +6,7 @@ public class InterceptionResult {
     private ConceptCategory frameworkPrediction;
     private ConceptCategory indicatorConceptCategoryPrediction;
     private DecisionCategory indicatorDecisionCategoryPrediction;
+    private ConceptCategory lowLevelIndicatorCategoryPrediction;
 
     public InterceptionResult(ConceptCategory realCategory,
                               ConceptCategory frameworkPrediction,
@@ -16,6 +17,19 @@ public class InterceptionResult {
         this.frameworkPrediction = frameworkPrediction;
         this.indicatorConceptCategoryPrediction = indicatorConceptCategoryPrediction;
         this.indicatorDecisionCategoryPrediction = indicatorDecisionCategoryPrediction;
+    }
+
+    public InterceptionResult(ConceptCategory realCategory,
+                              ConceptCategory frameworkPrediction,
+                              ConceptCategory indicatorConceptCategoryPrediction,
+                              DecisionCategory indicatorDecisionCategoryPrediction,
+                              ConceptCategory lowLevelIndicatorCategoryPrediction) {
+
+        this.realCategory = realCategory;
+        this.frameworkPrediction = frameworkPrediction;
+        this.indicatorConceptCategoryPrediction = indicatorConceptCategoryPrediction;
+        this.indicatorDecisionCategoryPrediction = indicatorDecisionCategoryPrediction;
+        this.lowLevelIndicatorCategoryPrediction = lowLevelIndicatorCategoryPrediction;
     }
 
     public ConfusionMatrixEnum getConfusionMatrixEnum() {
@@ -70,6 +84,15 @@ public class InterceptionResult {
 
     public InterceptionResult setIndicatorConceptCategoryPrediction(ConceptCategory indicatorConceptCategoryPrediction) {
         this.indicatorConceptCategoryPrediction = indicatorConceptCategoryPrediction;
+        return this;
+    }
+
+    public ConceptCategory getLowLevelIndicatorCategoryPrediction() {
+        return lowLevelIndicatorCategoryPrediction;
+    }
+
+    public InterceptionResult setLowLevelIndicatorCategoryPrediction(ConceptCategory lowLevelIndicatorCategoryPrediction) {
+        this.lowLevelIndicatorCategoryPrediction = lowLevelIndicatorCategoryPrediction;
         return this;
     }
 }

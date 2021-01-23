@@ -5,16 +5,19 @@ import br.com.douglas444.datastreamutils.interceptor.FunctionOrSupplierIntercept
 import br.com.douglas444.minas.Classification;
 import br.com.douglas444.minas.interceptor.context.DecisionModelContext;
 import br.com.douglas444.patternsampling.common.ConceptClassificationContext;
+import br.com.douglas444.patternsampling.common.WarmUpContext;
 
 public class MINASInterceptor {
 
     public final ConsumerOrRunnableInterceptor<ConceptClassificationContext> NOVELTY_DETECTION_AL_FRAMEWORK;
+    public final ConsumerOrRunnableInterceptor<WarmUpContext> WARM_UP_AL_FRAMEWORK;
     public final FunctionOrSupplierInterceptor<DecisionModelContext, Classification> SAMPLE_CLASSIFIER;
     public final FunctionOrSupplierInterceptor<DecisionModelContext, Classification> MICRO_CLUSTER_CLASSIFIER;
 
     public MINASInterceptor() {
 
         this.NOVELTY_DETECTION_AL_FRAMEWORK = new ConsumerOrRunnableInterceptor<>();
+        this.WARM_UP_AL_FRAMEWORK = new ConsumerOrRunnableInterceptor<>();
         this.SAMPLE_CLASSIFIER = new FunctionOrSupplierInterceptor<>();
         this.MICRO_CLUSTER_CLASSIFIER = new FunctionOrSupplierInterceptor<>();
 

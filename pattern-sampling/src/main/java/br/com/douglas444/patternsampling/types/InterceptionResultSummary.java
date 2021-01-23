@@ -23,6 +23,11 @@ public class InterceptionResultSummary {
     private int trueReliable;
     private int falseReliable;
 
+    private int rectified;
+    private int corrupted;
+    private int keptCorrect;
+    private int keptWrong;
+
     final List<InterceptionResult> results;
 
     public InterceptionResultSummary(final String frameworkOutput, final Double parameter1, final Double parameter2,
@@ -97,6 +102,28 @@ public class InterceptionResultSummary {
                 .filter(result -> result.getFrameworkPrediction() == ConceptCategory.NOVELTY)
                 .count();
 
+        //Low-level strategy
+
+        this.rectified = (int) results.stream()
+                .filter(result -> result.getConfusionMatrixEnum() == ConfusionMatrixEnum.TRUE_RISKY)
+                .filter(result -> result.getRealCategory() == result.getLowLevelIndicatorCategoryPrediction())
+                .count();
+
+        this.keptWrong = (int) results.stream()
+                .filter(result -> result.getConfusionMatrixEnum() == ConfusionMatrixEnum.TRUE_RISKY)
+                .filter(result -> result.getRealCategory() != result.getLowLevelIndicatorCategoryPrediction())
+                .count();
+
+        this.corrupted = (int) results.stream()
+                .filter(result -> result.getConfusionMatrixEnum() == ConfusionMatrixEnum.FALSE_RISKY)
+                .filter(result -> result.getRealCategory() != result.getLowLevelIndicatorCategoryPrediction())
+                .count();
+
+        this.keptCorrect = (int) results.stream()
+                .filter(result -> result.getConfusionMatrixEnum() == ConfusionMatrixEnum.FALSE_RISKY)
+                .filter(result -> result.getRealCategory() == result.getLowLevelIndicatorCategoryPrediction())
+                .count();
+
     }
 
 
@@ -166,6 +193,18 @@ public class InterceptionResultSummary {
         return trueKnownFramework / (double) (trueKnownFramework + falseNoveltyFramework);
     }
 
+    public double calculateLowLevelStrategyAccuracy() {
+        return (rectified + keptCorrect) / (double) (trueRisky + falseRisky);
+    }
+
+    public double calculateRealErrorRecovery() {
+        return rectified / (double) (trueRisky + falseReliable);
+    }
+
+    public double calculateIntroducedError() {
+        return corrupted / (double) (trueRisky + falseReliable);
+    }
+
     @Override
     public String toString() {
 
@@ -174,13 +213,19 @@ public class InterceptionResultSummary {
             "\nTotal of objects (patterns intercepted): " + calculateTotal() +
             "\nPositives (risky): " + calculatePositives() +
             "\nPrecision (efficiency): " + calculatePrecision() +
-            "\nRecall (error recover): " + calculateRecall() +
+            "\nRecall (potential error recovery): " + calculateRecall() +
             "\nF1: " + calculateF1() +
             "\n" + confusionMatrixDecisionCategoryPrediction() +
             "\n\nConcept category prediction by the indicator:" +
             "\nAccuracy for known patterns: " + calculateAccuracyForKnownPrediction_indicator() +
             "\nAccuracy for novel patterns: " + calculateAccuracyForNoveltyPrediction_indicator() +
             "\n" + confusionMatrixConceptCategoryPrediction_indicator() +
+            "\n\nLow-level strategy:" +
+            "\nAccuracy: " + calculateLowLevelStrategyAccuracy() +
+            "\nNumber oracle consultations: " + (trueRisky + falseRisky) + "*K" +
+            "\n\nFinal measures:" +
+            "\nReal error recovery: " + calculateRealErrorRecovery() +
+            "\nIntroduced error: " + calculateIntroducedError() +
             "\n\nConcept category prediction by the framework:" +
             "\nAccuracy for known patterns: " + calculateAccuracyForKnownPrediction_framework() +
             "\nAccuracy for novel patterns: " + calculateAccuracyForNoveltyPrediction_framework() +
